@@ -1,0 +1,49 @@
+<mxfile host="app.diagrams.net" modified="2026-05-03T00:00:00.000Z" agent="draw.io" version="24.7.17">
+  <diagram id="flow" name="Flow">
+    <mxGraphModel dx="1200" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="n1" value="Config" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="140" width="130" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="n2" value="MasscanRunner" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="220" y="140" width="150" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="n3" value="BannerGrabber" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="140" width="150" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="n4" value="PortRepository" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="140" width="150" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="n5" value="SQLite" style="shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;" vertex="1" parent="1">
+          <mxGeometry x="820" y="80" width="110" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="n6" value="TelegramNotifier" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="800" y="180" width="150" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="n7" value="EmailNotifier" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="800" y="260" width="150" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="n1" target="n2" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="n2" target="n3" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="n3" target="n4" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="n4" target="n5" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="n4" target="n6" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="n4" target="n7" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

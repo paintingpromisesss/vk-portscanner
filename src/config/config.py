@@ -13,10 +13,6 @@ class GrabberConfig(BaseModel):
     timeout: int
     concurrency_limit: int
 
-class VulnCheckerConfig(BaseModel):
-    timeout: int
-    concurrency_limit: int
-
 class TelegramConfig(BaseModel):
     enabled: bool
     bot_token: str
@@ -38,7 +34,6 @@ class SchedulerConfig(BaseModel):
 class Config(BaseModel):
     scanner: ScannerConfig
     grabber: GrabberConfig
-    vuln_checker: VulnCheckerConfig
     telegram: TelegramConfig
     email: EmailConfig
     scheduler: SchedulerConfig

@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 TELEGRAM_MESSAGE_LIMIT = 4096
 TELEGRAM_MESSAGE_SAFE_LIMIT = 3900
-DISPLAY_CVE_LIMIT = 10
 
 
 class TelegramNotifier(BaseNotifier):
@@ -91,19 +90,7 @@ class TelegramNotifier(BaseNotifier):
 
         service = self._clean_value(port.normalized_service())
         banner = self._clean_value(port.normalized_banner() or "empty banner")
-        cves = self._format_cves(port.normalized_cve_list())
-        return f"service={service}; banner={banner}; cve={self._clean_value(cves)}"
-
-    def _format_cves(self, cve_list: List[str]) -> str:
-        if not cve_list:
-            return "none"
-
-        visible = cve_list[:DISPLAY_CVE_LIMIT]
-        formatted = ", ".join(visible)
-        remaining = len(cve_list) - len(visible)
-        if remaining > 0:
-            formatted += f" ... (+{remaining} more)"
-        return formatted
+        return f"service={service}; banner={banner}"
 
     def _clean_value(self, value: str) -> str:
         trimmed = value.strip()[:180]

@@ -9,8 +9,6 @@ from src.notifier.base import BaseNotifier
 
 logger = logging.getLogger(__name__)
 
-DISPLAY_CVE_LIMIT = 10
-
 
 class EmailNotifier(BaseNotifier):
     def __init__(
@@ -73,19 +71,7 @@ class EmailNotifier(BaseNotifier):
 
         service = port.normalized_service()
         banner = port.normalized_banner() or "empty banner"
-        cves = self._format_cves(port.normalized_cve_list())
-        return f"service={service}; banner={banner}; cve={cves}"
-
-    def _format_cves(self, cve_list: List[str]) -> str:
-        if not cve_list:
-            return "none"
-
-        visible = cve_list[:DISPLAY_CVE_LIMIT]
-        formatted = ", ".join(visible)
-        remaining = len(cve_list) - len(visible)
-        if remaining > 0:
-            formatted += f" ... (+{remaining} more)"
-        return formatted
+        return f"service={service}; banner={banner}"
 
     def _send_message(self, message: EmailMessage) -> None:
         with smtplib.SMTP(self.smtp_host, self.smtp_port, timeout=30) as smtp:

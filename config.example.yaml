@@ -7,10 +7,6 @@ grabber:
     concurrency_limit: 50
     timeout: 3
 
-vuln_checker:
-    concurrency_limit: 5
-    timeout: 60
-
 telegram:
     enabled: false
     bot_token: "<bot_token>"
