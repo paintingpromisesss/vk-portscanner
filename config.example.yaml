@@ -1,0 +1,30 @@
+scanner:
+    targets: "1.1.1.1/32, 45.33.32.156/32, 64.13.139.230/32"
+    ports: "22,23,80,443,8000,8080"
+    rate: 1000
+
+grabber:
+    concurrency_limit: 50
+    timeout: 3
+
+vuln_checker:
+    concurrency_limit: 5
+    timeout: 60
+
+telegram:
+    enabled: false
+    bot_token: "<bot_token>"
+    chat_id: "<chat_id>"
+
+email:
+    enabled: false
+    smtp_host: "smtp.example.com"
+    smtp_port: 587
+    use_tls: true
+    username: "sender@example.com"
+    password: "<app_password>"
+    from_email: "sender@example.com"
+    to_email: "recipient@example.com"
+
+scheduler:
+    interval_minutes: 60
