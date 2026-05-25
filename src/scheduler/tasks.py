@@ -4,19 +4,21 @@ from datetime import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from src.config.config import Config
-from src.models.schemas import PortChange, PortInfo
+from src.models.schemas import PortChange, PortInfo, VulnerabilityInfo, VulnerabilitySummary
 from src.grabber.grabber import BannerGrabber
 from src.notifier.email import EmailNotifier
 from src.notifier.telegram import TelegramNotifier
 from src.scanner.masscan_runner import MasscanRunner
+from src.scanner.nmap_detector import NmapServiceDetector
 from src.storage.repository import PortRepository
+from src.vulners.client import VulnersClient
 
 logger = logging.getLogger(__name__)
 
 async def run_pipeline(config: Config):
     logger.info("=== Scanning pipeline started ===")
 
-    scanner = MasscanRunner(rate=config.scanner.rate)
+    scanner = MasscanRunner(rate=config.scanner.rate, wait=config.scanner.wait)
     raw_ports = await scanner.scan(config.scanner.targets, config.scanner.ports)
     if raw_ports is None:
         logger.warning("Masscan scan failed. Skipping diff for this run.")
@@ -24,6 +26,19 @@ async def run_pipeline(config: Config):
 
     grabber = BannerGrabber(timeout=config.grabber.timeout, concurrency_limit=config.grabber.concurrency_limit)
     processed_ports = await grabber.process_targets(raw_ports)
+
+    service_detector = NmapServiceDetector(
+        enabled=config.service_detector.enabled,
+        timeout=config.service_detector.timeout,
+    )
+    processed_ports = await service_detector.enrich_ports(processed_ports)
+
+    vulners_client = VulnersClient(
+        enabled=config.vulners.enabled,
+        api_key=config.vulners.api_key,
+        max_results_per_service=config.vulners.max_results_per_service,
+    )
+    processed_ports = await vulners_client.enrich_ports(processed_ports)
 
     repo = PortRepository()
     changes = await repo.save_scan_diff(
@@ -60,6 +75,21 @@ async def send_test_notifications(config: Config):
             protocol="tcp",
             service="ssl/http",
             banner="nginx 1.24.0 OpenSSL",
+            vulnerabilities=VulnerabilitySummary(
+                total_count=1,
+                max_score=8.7,
+                severity="HIGH",
+                top=[
+                    VulnerabilityInfo(
+                        id="CVE-2024-6387",
+                        cves=["CVE-2024-6387"],
+                        title="OpenSSH regreSSHion remote code execution",
+                        score=8.7,
+                        href="https://vulners.com/cve/CVE-2024-6387",
+                        description="Signal check for high-risk vulnerability notification formatting",
+                    )
+                ],
+            ),
             discovered_at=datetime.now(),
         ),
         changed_at=datetime.now(),

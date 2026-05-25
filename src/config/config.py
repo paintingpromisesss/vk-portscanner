@@ -8,10 +8,15 @@ class ScannerConfig(BaseModel):
     targets: str
     ports: str
     rate: int
+    wait: int = 5
 
 class GrabberConfig(BaseModel):
     timeout: int
     concurrency_limit: int
+
+class ServiceDetectorConfig(BaseModel):
+    enabled: bool = True
+    timeout: int = 30
 
 class TelegramConfig(BaseModel):
     enabled: bool
@@ -31,12 +36,19 @@ class EmailConfig(BaseModel):
 class SchedulerConfig(BaseModel):
     interval_minutes: int
 
+class VulnersConfig(BaseModel):
+    enabled: bool = False
+    api_key: str = ""
+    max_results_per_service: int = 5
+
 class Config(BaseModel):
     scanner: ScannerConfig
     grabber: GrabberConfig
+    service_detector: ServiceDetectorConfig
     telegram: TelegramConfig
     email: EmailConfig
     scheduler: SchedulerConfig
+    vulners: VulnersConfig
 
 def load_config(file_path: str = "config.yaml") -> Config:
     try:

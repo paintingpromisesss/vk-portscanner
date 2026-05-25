@@ -22,6 +22,10 @@ def _init_db_sync(db_path: str = DB_PATH) -> None:
                 protocol TEXT,
                 service TEXT,
                 banner TEXT,
+                vulnerability_count INTEGER,
+                vulnerability_max_score REAL,
+                vulnerability_severity TEXT,
+                vulnerability_summary TEXT,
                 is_open INTEGER NOT NULL DEFAULT 1,
                 scan_scope TEXT,
                 discovered_at TIMESTAMP,
@@ -40,6 +44,10 @@ def _init_db_sync(db_path: str = DB_PATH) -> None:
                 before_banner TEXT,
                 after_service TEXT,
                 after_banner TEXT,
+                after_vulnerability_count INTEGER,
+                after_vulnerability_max_score REAL,
+                after_vulnerability_severity TEXT,
+                after_vulnerability_summary TEXT,
                 changed_at TIMESTAMP NOT NULL
             )
         """)
@@ -58,9 +66,26 @@ def _init_db_sync(db_path: str = DB_PATH) -> None:
             "is_open": "ALTER TABLE ports ADD COLUMN is_open INTEGER NOT NULL DEFAULT 1",
             "scan_scope": "ALTER TABLE ports ADD COLUMN scan_scope TEXT",
             "updated_at": "ALTER TABLE ports ADD COLUMN updated_at TIMESTAMP",
+            "vulnerability_count": "ALTER TABLE ports ADD COLUMN vulnerability_count INTEGER",
+            "vulnerability_max_score": "ALTER TABLE ports ADD COLUMN vulnerability_max_score REAL",
+            "vulnerability_severity": "ALTER TABLE ports ADD COLUMN vulnerability_severity TEXT",
+            "vulnerability_summary": "ALTER TABLE ports ADD COLUMN vulnerability_summary TEXT",
         }
         for column_name, statement in migration_statements.items():
             if column_name not in port_columns:
+                db.execute(statement)
+
+        change_columns = {
+            row[1] for row in db.execute("PRAGMA table_info(port_changes)").fetchall()
+        }
+        change_migration_statements = {
+            "after_vulnerability_count": "ALTER TABLE port_changes ADD COLUMN after_vulnerability_count INTEGER",
+            "after_vulnerability_max_score": "ALTER TABLE port_changes ADD COLUMN after_vulnerability_max_score REAL",
+            "after_vulnerability_severity": "ALTER TABLE port_changes ADD COLUMN after_vulnerability_severity TEXT",
+            "after_vulnerability_summary": "ALTER TABLE port_changes ADD COLUMN after_vulnerability_summary TEXT",
+        }
+        for column_name, statement in change_migration_statements.items():
+            if column_name not in change_columns:
                 db.execute(statement)
 
         db.commit()

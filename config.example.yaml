@@ -1,11 +1,21 @@
 scanner:
-    targets: "1.1.1.1/32, 45.33.32.156/32, 64.13.139.230/32"
+    targets: "1.1.1.1/32,45.33.32.156/32,64.13.139.230/32"
     ports: "22,23,80,443,8000,8080"
     rate: 1000
+    wait: 5
 
 grabber:
     concurrency_limit: 50
     timeout: 3
+
+service_detector:
+    enabled: true
+    timeout: 30
+
+vulners:
+    enabled: false
+    api_key: "<vulners_api_key>"
+    max_results_per_service: 5
 
 telegram:
     enabled: false

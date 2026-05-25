@@ -71,7 +71,34 @@ class EmailNotifier(BaseNotifier):
 
         service = port.normalized_service()
         banner = port.normalized_banner() or "empty banner"
+        risk = self._format_risk(port)
+        if risk:
+            return f"service={service}; banner={banner}; {risk}"
         return f"service={service}; banner={banner}"
+
+    def _format_risk(self, port: PortInfo) -> str:
+        summary = port.vulnerabilities
+        if summary is None or summary.total_count <= 0:
+            return "cve=none"
+
+        score = "unknown" if summary.max_score is None else f"{summary.max_score:.1f}"
+        cves = []
+        refs = []
+        for vulnerability in summary.top[:3]:
+            cves.extend(vulnerability.cves or [vulnerability.id])
+            if vulnerability.href:
+                refs.append(vulnerability.href)
+
+        cve_text = ",".join(dict.fromkeys(cves[:3])) or "none"
+        risk = (
+            f"risk={summary.severity} "
+            f"score={score} "
+            f"count={summary.total_count} "
+            f"cve={cve_text}"
+        )
+        if refs:
+            risk = f"{risk} refs={','.join(refs[:2])}"
+        return risk
 
     def _send_message(self, message: EmailMessage) -> None:
         with smtplib.SMTP(self.smtp_host, self.smtp_port, timeout=30) as smtp:

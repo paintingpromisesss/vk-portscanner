@@ -81,6 +81,7 @@ class TelegramNotifier(BaseNotifier):
             "new": "<b>NEW</b>",
             "updated": "<b>UPDATED</b>",
             "closed": "<b>CLOSED</b>",
+            "risk": "<b>RISK</b>",
         }
         return titles.get(change.change_type, "<b>CHANGED</b>")
 
@@ -90,7 +91,35 @@ class TelegramNotifier(BaseNotifier):
 
         service = self._clean_value(port.normalized_service())
         banner = self._clean_value(port.normalized_banner() or "empty banner")
+        risk = self._format_risk(port)
+        if risk:
+            return f"service={service}; banner={banner}; {risk}"
         return f"service={service}; banner={banner}"
+
+    def _format_risk(self, port: PortInfo) -> str:
+        summary = port.vulnerabilities
+        if summary is None or summary.total_count <= 0:
+            return "cve=none"
+
+        score = "unknown" if summary.max_score is None else f"{summary.max_score:.1f}"
+        cves = []
+        refs = []
+        for vulnerability in summary.top[:3]:
+            cves.extend(vulnerability.cves or [vulnerability.id])
+            if vulnerability.href:
+                refs.append(vulnerability.href)
+
+        cve_text = ",".join(dict.fromkeys(cves[:3])) or "none"
+        ref_text = ",".join(refs[:2])
+        risk = (
+            f"risk={self._clean_value(summary.severity)} "
+            f"score={self._clean_value(score)} "
+            f"count={summary.total_count} "
+            f"cve={self._clean_value(cve_text)}"
+        )
+        if ref_text:
+            risk = f"{risk} refs={self._clean_value(ref_text)}"
+        return risk
 
     def _clean_value(self, value: str) -> str:
         trimmed = value.strip()[:180]

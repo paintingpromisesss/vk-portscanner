@@ -1,9 +1,12 @@
+import json
 import logging
 import sqlite3
 from datetime import datetime
 from typing import Dict, List, Tuple
 
-from src.models.schemas import PortChange, PortInfo
+from pydantic import ValidationError
+
+from src.models.schemas import PortChange, PortInfo, VulnerabilitySummary
 from src.storage.database import DB_PATH
 
 logger = logging.getLogger(__name__)
@@ -85,7 +88,10 @@ class PortRepository:
 
     def _load_existing_ports(self, db: sqlite3.Connection) -> Dict[Tuple[str, int, str], PortInfo]:
         rows = db.execute("""
-            SELECT ip, port, protocol, service, banner, discovered_at, is_open, scan_scope
+            SELECT
+                ip, port, protocol, service, banner,
+                vulnerability_summary,
+                discovered_at, is_open, scan_scope
             FROM ports
         """).fetchall()
 
@@ -97,6 +103,7 @@ class PortRepository:
                 protocol=row["protocol"] or "tcp",
                 service=row["service"],
                 banner=row["banner"],
+                vulnerabilities=self._parse_vulnerability_summary(row["vulnerability_summary"]),
                 discovered_at=self._parse_datetime(row["discovered_at"]),
             )
             port.__dict__["is_open"] = bool(row["is_open"])
@@ -110,9 +117,12 @@ class PortRepository:
         db.execute(
             """
             INSERT INTO ports (
-                ip, port, protocol, service, banner, is_open, scan_scope, discovered_at, updated_at
+                ip, port, protocol, service, banner,
+                vulnerability_count, vulnerability_max_score,
+                vulnerability_severity, vulnerability_summary,
+                is_open, scan_scope, discovered_at, updated_at
             )
-            VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)
             """,
             (
                 port.ip,
@@ -120,6 +130,10 @@ class PortRepository:
                 port.protocol,
                 port.normalized_service(),
                 port.normalized_banner(),
+                self._vulnerability_count(port),
+                self._vulnerability_max_score(port),
+                self._vulnerability_severity(port),
+                self._vulnerability_summary_json(port),
                 scan_scope,
                 port.discovered_at.isoformat(),
                 timestamp.isoformat(),
@@ -130,12 +144,25 @@ class PortRepository:
         db.execute(
             """
             UPDATE ports
-            SET service = ?, banner = ?, is_open = 1, scan_scope = ?, updated_at = ?
+            SET
+                service = ?,
+                banner = ?,
+                vulnerability_count = ?,
+                vulnerability_max_score = ?,
+                vulnerability_severity = ?,
+                vulnerability_summary = ?,
+                is_open = 1,
+                scan_scope = ?,
+                updated_at = ?
             WHERE ip = ? AND port = ? AND protocol = ?
             """,
             (
                 port.normalized_service(),
                 port.normalized_banner(),
+                self._vulnerability_count(port),
+                self._vulnerability_max_score(port),
+                self._vulnerability_severity(port),
+                self._vulnerability_summary_json(port),
                 scan_scope,
                 datetime.now().isoformat(),
                 port.ip,
@@ -171,9 +198,13 @@ class PortRepository:
                 ip, port, protocol, change_type,
                 before_service, before_banner,
                 after_service, after_banner,
+                after_vulnerability_count,
+                after_vulnerability_max_score,
+                after_vulnerability_severity,
+                after_vulnerability_summary,
                 changed_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 change.ip,
@@ -184,6 +215,10 @@ class PortRepository:
                 self._banner(change.before),
                 self._service(change.after),
                 self._banner(change.after),
+                self._vulnerability_count(change.after),
+                self._vulnerability_max_score(change.after),
+                self._vulnerability_severity(change.after),
+                self._vulnerability_summary_json(change.after),
                 change.changed_at.isoformat(),
             ),
         )
@@ -200,6 +235,35 @@ class PortRepository:
         if port is None:
             return None
         return port.normalized_banner()
+
+    def _vulnerability_count(self, port: PortInfo | None) -> int | None:
+        if port is None or port.vulnerabilities is None:
+            return None
+        return port.vulnerabilities.total_count
+
+    def _vulnerability_max_score(self, port: PortInfo | None) -> float | None:
+        if port is None or port.vulnerabilities is None:
+            return None
+        return port.vulnerabilities.max_score
+
+    def _vulnerability_severity(self, port: PortInfo | None) -> str | None:
+        if port is None or port.vulnerabilities is None:
+            return None
+        return port.vulnerabilities.severity
+
+    def _vulnerability_summary_json(self, port: PortInfo | None) -> str | None:
+        if port is None or port.vulnerabilities is None:
+            return None
+        return port.vulnerabilities.model_dump_json()
+
+    def _parse_vulnerability_summary(self, raw_value: str | None) -> VulnerabilitySummary | None:
+        if not raw_value:
+            return None
+        try:
+            return VulnerabilitySummary.model_validate(json.loads(raw_value))
+        except (json.JSONDecodeError, TypeError, ValidationError):
+            logger.warning("Failed to parse vulnerability summary from database")
+            return None
 
     def _parse_datetime(self, raw_value: str | None) -> datetime:
         if not raw_value:

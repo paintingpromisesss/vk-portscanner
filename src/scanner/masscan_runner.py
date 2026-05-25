@@ -11,15 +11,27 @@ from src.models.schemas import PortInfo
 logger = logging.getLogger(__name__)
 
 class MasscanRunner:
-    def __init__(self, executable_path: str = "masscan", rate: int = 1000):
+    def __init__(self, executable_path: str = "masscan", rate: int = 1000, wait: int = 5):
         self.executable_path = executable_path
         self.rate = rate
+        self.wait = wait
 
     async def scan(self, targets: str, ports: str) -> Optional[List[PortInfo]]:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as temp_file:
             temp_filename = temp_file.name
         try:
-            cmd = [self.executable_path, targets, "-p", ports, "--rate", str(self.rate), "-oJ", temp_filename, "--wait", "0"]
+            cmd = [
+                self.executable_path,
+                self._normalize_csv(targets),
+                "-p",
+                self._normalize_csv(ports),
+                "--rate",
+                str(self.rate),
+                "-oJ",
+                temp_filename,
+                "--wait",
+                str(self.wait),
+            ]
 
             logger.info(f"running masscan: {' '.join(cmd)}")
 
@@ -55,3 +67,6 @@ class MasscanRunner:
         finally:
             if os.path.exists(temp_filename):
                 os.remove(temp_filename)
+
+    def _normalize_csv(self, value: str) -> str:
+        return ",".join(part.strip() for part in value.split(",") if part.strip())

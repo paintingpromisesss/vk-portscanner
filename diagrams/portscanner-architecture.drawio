@@ -13,17 +13,23 @@
         <mxCell id="n3" value="BannerGrabber" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="420" y="140" width="150" height="50" as="geometry"/>
         </mxCell>
-        <mxCell id="n4" value="PortRepository" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="620" y="140" width="150" height="50" as="geometry"/>
+        <mxCell id="n4" value="NmapServiceDetector&#xa;nmap -sV" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="140" width="170" height="60" as="geometry"/>
         </mxCell>
-        <mxCell id="n5" value="SQLite" style="shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;" vertex="1" parent="1">
-          <mxGeometry x="820" y="80" width="110" height="60" as="geometry"/>
+        <mxCell id="n5" value="VulnersClient&#xa;CVE enrichment" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="850" y="140" width="170" height="60" as="geometry"/>
         </mxCell>
-        <mxCell id="n6" value="TelegramNotifier" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="800" y="180" width="150" height="50" as="geometry"/>
+        <mxCell id="n6" value="PortRepository&#xa;diff: NEW / UPDATED / CLOSED / RISK" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="130" width="210" height="80" as="geometry"/>
         </mxCell>
-        <mxCell id="n7" value="EmailNotifier" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="800" y="260" width="150" height="50" as="geometry"/>
+        <mxCell id="n7" value="SQLite&#xa;ports + changes + CVE summary" style="shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;" vertex="1" parent="1">
+          <mxGeometry x="1350" y="60" width="170" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="n8" value="TelegramNotifier" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1350" y="180" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="n9" value="EmailNotifier" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1350" y="260" width="160" height="50" as="geometry"/>
         </mxCell>
         <mxCell id="e1" edge="1" parent="1" source="n1" target="n2" style="endArrow=block;html=1;">
           <mxGeometry relative="1" as="geometry"/>
@@ -37,10 +43,16 @@
         <mxCell id="e4" edge="1" parent="1" source="n4" target="n5" style="endArrow=block;html=1;">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="e5" edge="1" parent="1" source="n4" target="n6" style="endArrow=block;html=1;">
+        <mxCell id="e5" edge="1" parent="1" source="n5" target="n6" style="endArrow=block;html=1;">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="e6" edge="1" parent="1" source="n4" target="n7" style="endArrow=block;html=1;">
+        <mxCell id="e6" edge="1" parent="1" source="n6" target="n7" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="n6" target="n8" style="endArrow=block;html=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="n6" target="n9" style="endArrow=block;html=1;">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
       </root>
